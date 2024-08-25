@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar"
-import { Alert, StyleSheet,Text, TextInput, TouchableOpacity, View, Image} from "react-native"
+import { Alert, StyleSheet,Text, TextInput, TouchableOpacity, View, Image, FlatList} from "react-native"
+import { Product } from "../Components/Product";
 
 export function Home() {
     const[products, setProducts] = useState<string[]>([])
@@ -9,25 +10,26 @@ export function Home() {
     
     function handleProductAdd() {
       if (products.includes(productName)) {
-        return Alert.alert("produto ja cadastrado", "Já existe um produto na lista com esse nome")
+          return Alert.alert("Produto já cadastrado!", "Já existe um produto na lista com este nome.");
       }
-  
+
       setProducts((prevState) => [...prevState, productName]);
       setProductName('');
     }
-    const handledProductRemove = (name: string) => {
-      console.log("Produto Removido! " + name);
-      return Alert.alert("Remover", `Deseja remover o produto ${name}?`, [
-        {
-          text: 'Sim',
-          onPress: () => setProducts(prevState => prevState.filter(products => products != name))
-        },
-        {
-          text: 'Não',
-          style: 'cancel'
-        }
-      ]);
+
+  function handleProductRemove(name: string) {
+    Alert.alert("Remover", `Deseja remover o produto ${name}?`, [
+            {
+              text: 'Sim',
+              onPress: () => setProducts(prevState => prevState.filter(product => product != name)) 
+            },
+            {
+              text: 'Não',
+              style: 'cancel'
+            }
+        ]);
     }
+
 
   return (
     <View style={styles.container}>
@@ -51,13 +53,26 @@ export function Home() {
 
       <View style={styles.secaoBranca}>
 
-      <View style={styles.content}>
-        <Image style={styles.image} source={require('../images/ListaCompras.png.png')}/>
-        <Text style={styles.emptyMessage}>
+      <FlatList
+       data={products}
+       keyExtractor={item => item}
+       renderItem={({item}) => (
+         <Product name={item} onRemove={() => handleProductRemove(item)}/>
+        )}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={products.length <= 0 && styles.List}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>        
+          <Image style={styles.image} source={require('../images/ListaCompras.png.png')}/>
+          <Text style={styles.emptyMessage}>
           Você ainda não tem produtos na lista de compra{'\n'}
           Adicione produtos e organize sua lista de compras
         </Text>
       </View>
+        )}
+      />
+      
+        
       </View>
     </View>
   );
@@ -112,10 +127,9 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold"
   },
-  content: {
-    alignItems: 'center',
-    marginHorizontal: 20,
-    marginTop: 20,
+  emptyContainer: {
+    alignItems:"center",
+    flex: 1
   },
   emptyMessage: {
     color: '#666',
@@ -126,6 +140,8 @@ const styles = StyleSheet.create({
   image:{
     width: 56,
     height: 56,
-    marginTop: 200
+  },
+  List: {
+    justifyContent: "center"
   }
 })
